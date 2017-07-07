@@ -6,21 +6,6 @@ import org.apache.avro.Schema.Field
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe._
 
-case class Record1(b: Boolean, i: Int, l: Long, f: Float, d: Double, s: String, ba: Array[Byte])
-case class Record2(b: Option[Boolean],
-                   i: Option[Int], l: Option[Long],
-                   f: Option[Float], d: Option[Double],
-                   s: Option[String],
-                   ba: Option[Array[Byte]])
-case class Record3(b: List[Boolean],
-                   i: List[Int], l: List[Long],
-                   f: List[Float], d: List[Double],
-                   s: List[String],
-                   ba: List[Array[Byte]])
-case class Record4(r1: Record1, r2: Record2, r3: Record3,
-                   o1: Option[Record1], o2: Option[Record2], o3: Option[Record3],
-                   l1: List[Record1], l2: List[Record2], l3: List[Record3])
-
 object AvroSchema {
 
   private def isField(s: Symbol): Boolean =
@@ -49,7 +34,6 @@ object AvroSchema {
 
     case t if isCaseClass(t) =>
       val fields: List[Field] = t.decls.filter(isField).map(toField)(scala.collection.breakOut)
-      println(t.typeSymbol.name.toString, t.typeSymbol.owner.fullName)
       val name = t.typeSymbol.name.toString
       val pkg = t.typeSymbol.owner.fullName
       (Schema.createRecord(name, null, pkg, false, fields.asJava), null)
@@ -62,20 +46,9 @@ object AvroSchema {
     new Field(name, schema, null, default)
   }
 
-  def of[T: TypeTag]: Schema = {
+  def apply[T: TypeTag]: Schema = {
     val tt = implicitly[TypeTag[T]]
     toSchema(tt.tpe)._1
   }
 
-  def test[T: TypeTag]: Unit = {
-    println("=" * 50)
-    println(of[T].toString(true))
-  }
-
-  def main(args: Array[String]): Unit = {
-    test[Record1]
-    test[Record2]
-    test[Record3]
-    test[Record4]
-  }
 }
